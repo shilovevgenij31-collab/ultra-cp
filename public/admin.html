@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Администратор — Юнит-Экономика</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f0f;--surface:#161616;--surface2:#1c1c1c;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --purple:#6866f2;--purple-d:#5250c2;--purple-lo:rgba(104,102,242,0.12);
+  --success:#4fd896;--success-lo:rgba(79,216,150,0.1);--success-md:rgba(79,216,150,0.25);
+  --error:#ef4444;--error-lo:rgba(239,68,68,0.1);--error-md:rgba(239,68,68,0.25);
+  --t1:#f5f5f5;--t2:#888;--t3:rgba(245,245,245,0.3);
+  --input-bg:#1e1e1e;--input-bd:rgba(255,255,255,0.1);
+  --sans:'Manrope',sans-serif;--mono:'JetBrains Mono',monospace;
+  --r:16px;--rs:12px;
+}
+html{font-size:14px}
+body{background:var(--bg);color:var(--t1);font-family:var(--sans);min-height:100vh;line-height:1.55;}
+
+/* Header */
+.hdr{
+  height:58px;background:rgba(15,15,15,0.9);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:100;
+}
+.hdr-l{display:flex;align-items:center;gap:12px;}
+.logo{font-size:12px;font-weight:800;color:#fff;background:var(--purple);padding:5px 10px;border-radius:8px;letter-spacing:.03em;}
+.brand{font-size:15px;font-weight:800;letter-spacing:-.3px;}
+.sub{font-size:10px;color:var(--t2);font-family:var(--mono);}
+.hdr-r{display:flex;align-items:center;gap:8px;}
+
+/* Buttons */
+.btn{
+  padding:8px 16px;background:var(--purple);color:#fff;border:none;border-radius:12px;
+  font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;
+}
+.btn:hover{background:var(--purple-d);}
+.btn-outline{
+  padding:8px 14px;background:transparent;color:var(--t2);border:1px solid var(--border2);
+  border-radius:10px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;
+}
+.btn-outline:hover{color:var(--t1);border-color:var(--t2);}
+.btn-sm{padding:6px 12px;font-size:11px;}
+
+/* Layout */
+.wrap{max-width:860px;margin:0 auto;padding:24px;}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px;}
+.ch{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);}
+.ch h2{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t2);}
+.cb{padding:16px;}
+
+/* Fields */
+.field{margin-bottom:14px;}
+.field:last-child{margin-bottom:0;}
+.field label{display:block;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);margin-bottom:5px;}
+.field input,.field textarea,.field select{
+  width:100%;background:var(--input-bg);border:1.5px solid var(--input-bd);border-radius:var(--rs);
+  color:var(--t1);font-family:var(--sans);font-size:13px;font-weight:500;padding:9px 12px;
+  outline:none;transition:border-color .15s,box-shadow .15s;
+}
+.field input:focus,.field textarea:focus{border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-lo);}
+.field textarea{resize:vertical;min-height:100px;line-height:1.55;}
+.field input::placeholder,.field textarea::placeholder{color:var(--t3);}
+.field .hint{font-size:10px;color:var(--t2);margin-top:4px;line-height:1.4;}
+
+/* Grid */
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+/* Sum badge */
+.sum-badge{
+  font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:5px;font-weight:700;
+}
+.sum-ok{background:var(--success-lo);color:var(--success);border:1px solid var(--success-md);}
+.sum-err{background:var(--error-lo);color:var(--error);border:1px solid var(--error-md);}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:9999;
+  background:var(--success-lo);border:1px solid var(--success-md);border-radius:10px;
+  padding:12px 20px;font-size:13px;font-weight:600;color:var(--success);
+  animation:tslide .25s ease;
+}
+@keyframes tslide{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* Users table */
+.users-table{width:100%;border-collapse:collapse;}
+.users-table th{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border2);}
+.users-table td{padding:10px 10px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle;}
+.users-table tr:last-child td{border-bottom:none;}
+.role-badge{font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:4px;font-weight:700;}
+.role-admin{background:var(--purple-lo);color:var(--purple);border:1px solid rgba(104,102,242,0.3);}
+.role-editor{background:var(--border);color:var(--t2);}
+
+/* Error bar */
+.error-bar{
+  background:var(--error-lo);border:1px solid var(--error-md);border-radius:10px;
+  padding:10px 14px;font-size:12px;color:var(--error);margin-bottom:14px;display:none;
+}
+.error-bar.show{display:block;}
+
+/* Modal */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:380px;box-shadow:0 32px 80px rgba(0,0,0,.4);}
+.modal-hdr{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:20px 20px 0 0;}
+.modal-hdr h3{font-size:15px;font-weight:800;letter-spacing:-.2px;}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--t2);font-size:20px;padding:2px 7px;border-radius:6px;transition:all .15s;}
+.modal-close:hover{color:var(--t1);}
+.modal-body{padding:20px 22px;}
+.modal-ftr{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--surface2);border-radius:0 0 20px 20px;}
+
+body.light{--bg:#f8f8f8;--surface:#fff;--surface2:#f2f2f2;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);--t1:#0f0f0f;--t2:#666;--t3:rgba(15,15,15,0.3);--input-bg:#fff;--input-bd:rgba(0,0,0,0.12);--purple:#5553d6;--purple-lo:rgba(85,83,214,0.1);--success:#16a34a;--success-lo:rgba(22,163,74,0.08);--success-md:rgba(22,163,74,0.2);--error:#dc2626;--error-lo:rgba(220,38,38,0.08);--error-md:rgba(220,38,38,0.2);}
+</style>
+</head>
+<body>
+<script src="/theme.js"></script>
+
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="logo">Ед</div>
+    <div>
+      <div class="brand">Юнит-Экономика</div>
+      <div class="sub">EdAgency · Администратор</div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <span id="user_name" style="font-size:12px;color:var(--t2)"></span>
+    <a href="/" class="btn-outline btn-sm">← Калькулятор</a>
+    <button class="btn-outline btn-sm" id="theme_btn" onclick="toggleThemeGlobal()"><span id="theme_icon">☀</span> <span id="theme_lbl">Светлая</span></button>
+    <button class="btn-outline btn-sm" onclick="logout()">Выйти</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- Dist settings -->
+  <div class="card">
+    <div class="ch">
+      <h2>Распределение выручки</h2>
+      <span id="dist_sum_badge" class="sum-badge sum-ok">100%</span>
+    </div>
+    <div class="cb">
+      <div class="error-bar" id="dist_error"></div>
+      <div class="r3">
+        <div class="field"><label>Продукт</label><input type="number" id="s_dist_product" min="0" max="100" step="0.5" oninput="updateDistSum()"><div class="hint">%</div></div>
+        <div class="field"><label>Маркетинг</label><input type="number" id="s_dist_marketing" min="0" max="100" step="0.5" oninput="updateDistSum()"><div class="hint">%</div></div>
+        <div class="field"><label>Продажи</label><input type="number" id="s_dist_sales" min="0" max="100" step="0.5" oninput="updateDistSum()"><div class="hint">%</div></div>
+        <div class="field"><label>Административные</label><input type="number" id="s_dist_admin" min="0" max="100" step="0.5" oninput="updateDistSum()"><div class="hint">%</div></div>
+        <div class="field"><label>Налоги</label><input type="number" id="s_dist_taxes" min="0" max="100" step="0.5" oninput="updateDistSum()"><div class="hint">%</div></div>
+        <div class="field"><label>Чистая прибыль</label><input type="number" id="s_dist_profit" min="0" max="100" step="0.5" oninput="updateDistSum()"><div class="hint">%</div></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn-sm" onclick="saveDist()">Сохранить распределение</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Base rate -->
+  <div class="card">
+    <div class="ch"><h2>Базовые параметры</h2></div>
+    <div class="cb">
+      <div class="r2">
+        <div class="field">
+          <label>Базовая ставка (₽/час)</label>
+          <input type="number" id="s_base_rate" min="100" step="50">
+          <div class="hint">Ставка по умолчанию для нового исполнителя</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn-sm" onclick="saveBaseRate()">Сохранить ставку</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- API key -->
+  <div class="card">
+    <div class="ch"><h2>API-ключ Anthropic</h2></div>
+    <div class="cb">
+      <div class="field">
+        <label>Ключ (sk-ant-...)</label>
+        <input type="password" id="s_anthropic_api_key" placeholder="sk-ant-api03-...">
+        <div class="hint">Используется для генерации КП через Claude AI</div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn-sm" onclick="saveApiKey()">Сохранить ключ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KP Prompt -->
+  <div class="card">
+    <div class="ch"><h2>Промпт для генерации КП</h2></div>
+    <div class="cb">
+      <div class="field">
+        <label>Системный промпт (оставьте пустым для дефолтного)</label>
+        <textarea id="s_kp_prompt" rows="6" placeholder="Оставьте пустым — будет использоваться стандартный промпт из калькулятора"></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn-sm" onclick="savePrompt()">Сохранить промпт</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unified service prices -->
+  <div class="card">
+    <div class="ch"><h2>Прайс-лист услуг</h2><span style="font-family:var(--mono);font-size:9px;color:var(--t2);padding:2px 8px;border-radius:4px;background:var(--surface2)">localStorage</span></div>
+    <div class="cb">
+      <div style="font-size:11px;color:var(--t2);margin-bottom:12px">Цены сохраняются в браузере каждого пользователя. Изменения сразу отражаются в калькуляторе и кнопках «КП →».</div>
+      <div id="all_prices_list" style="display:flex;flex-direction:column;gap:6px"></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px;gap:8px">
+        <button class="btn-outline btn-sm" onclick="resetAllPrices()">Сбросить к базовым</button>
+        <button class="btn btn-sm" onclick="saveAllPrices()">Сохранить цены</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Saved KPs -->
+  <div class="card">
+    <div class="ch">
+      <h2>Сохранённые КП</h2>
+      <span id="kp_count" style="font-family:var(--mono);font-size:9px;color:var(--t2);padding:2px 8px;border-radius:4px;background:var(--surface2)"></span>
+    </div>
+    <div class="cb" style="padding:0">
+      <div id="kp_list_loading" style="padding:20px;color:var(--t2);font-size:12px;text-align:center">Загрузка…</div>
+      <table class="users-table" id="kp_table" style="display:none">
+        <thead>
+          <tr>
+            <th>Проект</th>
+            <th>Клиент</th>
+            <th>Менеджер</th>
+            <th>Сумма</th>
+            <th>Дата</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="kp_tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Clarifications -->
+  <div class="card">
+    <div class="ch">
+      <h2>Запросы на уточнение</h2>
+      <span id="clarif_count" style="font-family:var(--mono);font-size:9px;color:var(--t2);padding:2px 8px;border-radius:4px;background:var(--surface2)"></span>
+    </div>
+    <div class="cb" style="padding:0">
+      <div id="clarif_loading" style="padding:20px;color:var(--t2);font-size:12px;text-align:center">Загрузка…</div>
+      <table class="users-table" id="clarif_table" style="display:none">
+        <thead>
+          <tr>
+            <th>Проект КП</th>
+            <th>Имя</th>
+            <th>Сообщение</th>
+            <th>Дата</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="clarif_tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Users -->
+  <div class="card">
+    <div class="ch"><h2>Пользователи</h2></div>
+    <div class="cb" style="padding:0">
+      <div id="users_loading" style="padding:20px;color:var(--t2);font-size:12px;text-align:center">Загрузка…</div>
+      <table class="users-table" id="users_table" style="display:none">
+        <thead>
+          <tr>
+            <th>Имя</th>
+            <th>Логин</th>
+            <th>Роль</th>
+            <th>Дата</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="users_tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Password modal -->
+<div class="modal-ov" id="pw_modal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <h3>Смена пароля</h3>
+      <button class="modal-close" onclick="closePwModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="error-bar" id="pw_error"></div>
+      <div class="field">
+        <label>Пользователь</label>
+        <div id="pw_username_display" style="font-size:13px;color:var(--t1);padding:9px 0;font-weight:600"></div>
+      </div>
+      <div class="field">
+        <label>Новый пароль</label>
+        <input type="password" id="pw_new" placeholder="Минимум 6 символов">
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn-outline btn-sm" onclick="closePwModal()">Отмена</button>
+      <button class="btn btn-sm" onclick="savePassword()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="rename_modal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <h3>Переименовать пользователя</h3>
+      <button class="modal-close" onclick="closeRenameModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="error-bar" id="rename_error"></div>
+      <div class="field">
+        <label>Логин</label>
+        <div id="rename_username_display" style="font-size:13px;color:var(--t2);padding:9px 0;font-family:var(--mono)"></div>
+      </div>
+      <div class="field">
+        <label>Отображаемое имя</label>
+        <input type="text" id="rename_new" placeholder="Имя редактора">
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn-outline btn-sm" onclick="closeRenameModal()">Отмена</button>
+      <button class="btn btn-sm" onclick="saveRename()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let token = localStorage.getItem('calc_token');
+let currentUser = null;
+let pwUserId = null;
+
+async function apiGet(url) {
+  const resp = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+  if (resp.status === 401) { logout(); return null; }
+  return resp.json();
+}
+
+async function apiPut(url, body) {
+  const resp = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify(body),
+  });
+  return { ok: resp.ok, data: await resp.json() };
+}
+
+function logout() {
+  localStorage.removeItem('calc_token');
+  localStorage.removeItem('calc_user');
+  document.cookie = 'token=; path=/; max-age=0';
+  window.location.href = '/login';
+}
+
+function showToast(msg) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2500);
+}
+
+function updateDistSum() {
+  const keys = ['dist_product','dist_marketing','dist_sales','dist_admin','dist_taxes','dist_profit'];
+  const sum = keys.reduce((a,k) => a + (parseFloat(document.getElementById('s_'+k)?.value)||0), 0);
+  const badge = document.getElementById('dist_sum_badge');
+  const ok = Math.abs(sum - 100) < 0.1;
+  badge.textContent = sum.toFixed(1) + '%';
+  badge.className = 'sum-badge ' + (ok ? 'sum-ok' : 'sum-err');
+}
+
+async function saveDist() {
+  const keys = ['dist_product','dist_marketing','dist_sales','dist_admin','dist_taxes','dist_profit'];
+  const body = {};
+  for (const k of keys) body[k] = document.getElementById('s_'+k).value;
+  const sum = keys.reduce((a,k) => a + (parseFloat(body[k])||0), 0);
+  if (Math.abs(sum - 100) >= 0.1) {
+    const err = document.getElementById('dist_error');
+    err.textContent = 'Сумма долей должна быть 100%. Сейчас: ' + sum.toFixed(1) + '%';
+    err.classList.add('show');
+    return;
+  }
+  document.getElementById('dist_error').classList.remove('show');
+  const { ok } = await apiPut('/api/admin/settings', body);
+  if (ok) showToast('Распределение сохранено ✓');
+}
+
+async function saveBaseRate() {
+  const val = document.getElementById('s_base_rate').value;
+  const { ok } = await apiPut('/api/admin/settings', { base_rate: val });
+  if (ok) showToast('Ставка сохранена ✓');
+}
+
+async function saveApiKey() {
+  const val = document.getElementById('s_anthropic_api_key').value.trim();
+  if (!val) return;
+  const { ok } = await apiPut('/api/admin/settings', { anthropic_api_key: val });
+  if (ok) showToast('API-ключ сохранён ✓');
+}
+
+async function savePrompt() {
+  const val = document.getElementById('s_kp_prompt').value;
+  const { ok } = await apiPut('/api/admin/settings', { kp_prompt: val });
+  if (ok) showToast('Промпт сохранён ✓');
+}
+
+let renameUserId = null;
+function openRenameModal(userId, displayName) {
+  renameUserId = userId;
+  document.getElementById('rename_username_display').textContent = displayName;
+  document.getElementById('rename_new').value = displayName;
+  document.getElementById('rename_error').textContent = '';
+  document.getElementById('rename_modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('rename_new').focus(), 50);
+}
+function closeRenameModal() {
+  document.getElementById('rename_modal').style.display = 'none';
+  renameUserId = null;
+}
+async function saveRename() {
+  const display_name = document.getElementById('rename_new').value.trim();
+  if (!display_name) { document.getElementById('rename_error').textContent = 'Имя не может быть пустым'; return; }
+  const resp = await fetch('/api/admin/users/' + renameUserId + '/name', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('calc_token') },
+    body: JSON.stringify({ display_name })
+  });
+  if (resp.ok) {
+    closeRenameModal();
+    const users = await (await fetch('/api/admin/users', { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('calc_token') } })).json();
+    renderUsers(users);
+  } else {
+    const d = await resp.json();
+    document.getElementById('rename_error').textContent = d.error || 'Ошибка';
+  }
+}
+
+function openPwModal(userId, displayName) {
+  pwUserId = userId;
+  document.getElementById('pw_username_display').textContent = displayName;
+  document.getElementById('pw_new').value = '';
+  document.getElementById('pw_error').classList.remove('show');
+  document.getElementById('pw_modal').style.display = 'flex';
+}
+function closePwModal() {
+  document.getElementById('pw_modal').style.display = 'none';
+  pwUserId = null;
+}
+
+async function savePassword() {
+  const password = document.getElementById('pw_new').value;
+  if (!password || password.length < 6) {
+    const err = document.getElementById('pw_error');
+    err.textContent = 'Пароль должен содержать не менее 6 символов';
+    err.classList.add('show');
+    return;
+  }
+  const resp = await fetch('/api/admin/users/' + pwUserId + '/password', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify({ password }),
+  });
+  const data = await resp.json();
+  if (resp.ok) {
+    closePwModal();
+    showToast('Пароль изменён ✓');
+  } else {
+    const err = document.getElementById('pw_error');
+    err.textContent = data.error || 'Ошибка';
+    err.classList.add('show');
+  }
+}
+
+function renderUsers(users) {
+  const tbody = document.getElementById('users_tbody');
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td style="font-weight:600">${escHtml(u.display_name)}</td>
+      <td style="font-family:var(--mono);color:var(--t2)">${escHtml(u.username)}</td>
+      <td><span class="role-badge ${u.role === 'admin' ? 'role-admin' : 'role-editor'}">${u.role}</span></td>
+      <td style="font-size:11px;color:var(--t2);font-family:var(--mono)">${new Date(u.created_at).toLocaleDateString('ru-RU')}</td>
+      <td style="display:flex;gap:6px">
+        <button class="btn-outline btn-sm" onclick="openRenameModal(${u.id},'${escHtml(u.display_name)}')">Переименовать</button>
+        <button class="btn-outline btn-sm" onclick="openPwModal(${u.id},'${escHtml(u.display_name)}')">Сменить пароль</button>
+      </td>
+    </tr>
+  `).join('');
+  document.getElementById('users_loading').style.display = 'none';
+  document.getElementById('users_table').style.display = 'table';
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Единый прайс-лист услуг ───────────────────────────────────────────
+// Все цены хранятся под ключом method_price_<id>
+const ALL_PRICES=[
+  {id:'hr_agency',      name:'Час агентства',                       basePrice:3500},
+  {id:'pres30',         name:'Презентация до 30 слайдов',           basePrice:35000},
+  {id:'pres_slide',     name:'Доп. слайд',                          basePrice:1000},
+  {id:'add_simple',     name:'Доп. материалы простые',              basePrice:14583},
+  {id:'add_complex',    name:'Доп. материалы сложные',              basePrice:24500},
+  {id:'course_prog',    name:'Программа курса',                     basePrice:160000},
+  {id:'strat',          name:'Продуктовая стратегия',               basePrice:100000},
+  {id:'concept',        name:'Концепция / программа интенсива',     basePrice:100000},
+  {id:'audit',          name:'Аудит курса / материалов',            basePrice:80000},
+  {id:'lesson',         name:'Разработка урока',                    basePrice:50000},
+  {id:'meaning_map',    name:'Карта смыслов',                       basePrice:56000},
+  {id:'cjm',            name:'Разработка CJM',                      basePrice:56000},
+  {id:'sjm_alone',      name:'SJM (отдельно)',                      basePrice:160000},
+  {id:'sjm_addon',      name:'SJM (в дополнение к программе)',      basePrice:49000},
+  {id:'custdev',        name:'CustDev-интервью (тёплая), 1 шт',     basePrice:10000},
+  {id:'custdev_cold',   name:'CustDev-интервью (холодная), 1 шт',   basePrice:13000},
+  {id:'market_anal',    name:'Анализ рынка и конкурентов',           basePrice:80000},
+  {id:'webinar_content',name:'Вебинар (контент)',                    basePrice:70000},
+  {id:'webinar_close',  name:'Вебинар (клоуз)',                      basePrice:42000},
+  {id:'landing1p',      name:'Одностраничный лендинг (прототип)',   basePrice:89000},
+  {id:'landing_multipage',name:'Многостраничный лендинг',           basePrice:89000},
+  {id:'landing_mini',   name:'Одноэкранный лендинг',                basePrice:45500},
+  {id:'markit',         name:'Маркетинг-кит',                       basePrice:70000},
+];
+
+function priceRow(item){
+  const stored=localStorage.getItem('method_price_'+item.id);
+  const val=stored||item.basePrice;
+  return `<div style="display:flex;align-items:center;gap:10px">
+    <span style="flex:1;font-size:12px;color:var(--t1)">${item.name}</span>
+    <input type="number" id="admp_${item.id}" value="${val}" min="0" step="1000"
+      style="width:120px;background:var(--input-bg);border:1.5px solid var(--input-bd);border-radius:8px;color:var(--t1);font-family:var(--mono);font-size:12px;padding:5px 8px;outline:none;text-align:right">
+    <span style="font-size:11px;color:var(--t2);width:12px">₽</span>
+  </div>`;
+}
+
+function renderPriceEditors(){
+  const al=document.getElementById('all_prices_list');
+  if(al) al.innerHTML=ALL_PRICES.map(t=>priceRow(t)).join('');
+}
+
+function saveAllPrices(){
+  ALL_PRICES.forEach(t=>{
+    const el=document.getElementById('admp_'+t.id);
+    if(el) localStorage.setItem('method_price_'+t.id, el.value);
+  });
+  showToast('Прайс-лист сохранён ✓');
+}
+
+function resetAllPrices(){
+  ALL_PRICES.forEach(t=>localStorage.removeItem('method_price_'+t.id));
+  renderPriceEditors();
+  showToast('Прайс-лист сброшен к базовым');
+}
+
+function renderKPList(calcs) {
+  const loading = document.getElementById('kp_list_loading');
+  const table = document.getElementById('kp_table');
+  const tbody = document.getElementById('kp_tbody');
+  const countEl = document.getElementById('kp_count');
+  if (loading) loading.style.display = 'none';
+  if (countEl) countEl.textContent = calcs.length + ' шт.';
+  if (!calcs.length) {
+    if (loading) { loading.style.display = 'block'; loading.textContent = 'Нет сохранённых записей'; }
+    return;
+  }
+  tbody.innerHTML = calcs.map(c => {
+    const price = c.price > 0 ? c.price.toLocaleString('ru-RU') + '\u202f₽' : '—';
+    const date = c.created_at ? new Date(c.created_at).toLocaleDateString('ru-RU') : '—';
+    const link = '/kp/' + c.slug;
+    const hasKP = !!c.has_kp;
+    return `<tr>
+      <td>
+        ${hasKP ? `<a href="${link}" target="_blank" style="color:var(--purple);text-decoration:none;font-weight:600">${escHtml(c.title || '—')}</a>`
+                : `<span style="color:var(--t1);font-weight:600">${escHtml(c.title || '—')}</span>`}
+      </td>
+      <td style="color:var(--t2)">${escHtml(c.client || '—')}</td>
+      <td style="color:var(--t2)">${escHtml(c.responsible_name || '—')}</td>
+      <td style="font-family:var(--mono);font-size:11px">${price}</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--t3)">${date}</td>
+      <td style="text-align:right">
+        ${hasKP ? `<a href="${link}" target="_blank" class="btn-outline btn-sm" style="text-decoration:none;margin-right:4px">Открыть КП</a>` : '<span style="font-size:11px;color:var(--t3);margin-right:8px">нет КП</span>'}
+        <button class="btn-outline btn-sm" style="color:var(--error);border-color:var(--error)" onclick="deleteKP(${c.id})">Удалить</button>
+      </td>
+    </tr>`;
+  }).join('');
+  if (table) table.style.display = 'table';
+}
+
+async function deleteKP(id) {
+  if (!confirm('Удалить КП?')) return;
+  await fetch('/api/admin/kp/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
+  const calcs = await apiGet('/api/admin/kp-list');
+  if (calcs) renderKPList(calcs);
+}
+
+function renderClarifications(items) {
+  const loading = document.getElementById('clarif_loading');
+  const table = document.getElementById('clarif_table');
+  const tbody = document.getElementById('clarif_tbody');
+  const countEl = document.getElementById('clarif_count');
+  if (loading) loading.style.display = 'none';
+  if (countEl) countEl.textContent = items.length + ' шт.';
+  if (!items.length) {
+    if (loading) { loading.style.display = 'block'; loading.textContent = 'Нет запросов'; }
+    return;
+  }
+  tbody.innerHTML = items.map(c => {
+    const date = c.created_at ? new Date(c.created_at).toLocaleDateString('ru-RU', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+    const kpLink = '/kp/' + c.slug;
+    return `<tr>
+      <td><a href="${kpLink}" target="_blank" style="color:var(--purple);text-decoration:none;font-weight:600">${escHtml(c.kp_title || c.slug)}</a></td>
+      <td style="color:var(--t2)">${escHtml(c.name || 'Аноним')}</td>
+      <td style="color:var(--t1);max-width:320px;white-space:pre-wrap;font-size:12px">${escHtml(c.message)}</td>
+      <td style="font-family:var(--mono);font-size:10px;color:var(--t3);white-space:nowrap">${date}</td>
+      <td style="text-align:right">
+        <a href="${kpLink}" target="_blank" class="btn-outline btn-sm" style="text-decoration:none">Открыть КП</a>
+      </td>
+    </tr>`;
+  }).join('');
+  if (table) table.style.display = 'table';
+}
+
+async function init() {
+  if (!token) { window.location.href = '/login'; return; }
+
+  // Check auth and role
+  const me = await apiGet('/api/auth/me');
+  if (!me) return;
+  if (me.role !== 'admin') {
+    alert('Доступ запрещён: требуются права администратора');
+    window.location.href = '/';
+    return;
+  }
+  currentUser = me;
+  document.getElementById('user_name').textContent = me.display_name;
+
+  // Load settings
+  const settings = await apiGet('/api/admin/settings');
+  if (settings) {
+    const distKeys = ['dist_product','dist_marketing','dist_sales','dist_admin','dist_taxes','dist_profit'];
+    for (const k of distKeys) {
+      const el = document.getElementById('s_' + k);
+      if (el) el.value = settings[k] || '';
+    }
+    document.getElementById('s_base_rate').value = settings.base_rate || '';
+    document.getElementById('s_anthropic_api_key').value = settings.anthropic_api_key || '';
+    document.getElementById('s_kp_prompt').value = settings.kp_prompt || '';
+    updateDistSum();
+  }
+
+  // Load KP list
+  const calcs = await apiGet('/api/admin/kp-list');
+  if (calcs) renderKPList(calcs);
+
+  // Load clarifications
+  const clarifs = await apiGet('/api/admin/clarifications');
+  if (clarifs) renderClarifications(clarifs);
+
+  // Load users
+  const users = await apiGet('/api/admin/users');
+  if (users) renderUsers(users);
+
+  // Render price editors
+  renderPriceEditors();
+}
+
+init();
+</script>
+</body>
+</html>

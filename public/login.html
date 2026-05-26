@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вход — Юнит-Экономика</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:#0f0f0f;
+  color:#f5f5f5;
+  font-family:'Manrope',sans-serif;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  overflow:hidden;
+}
+
+/* Background glow */
+body::before{
+  content:'';
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(ellipse 60% 50% at 50% 40%, rgba(104,102,242,0.1) 0%, transparent 70%);
+  pointer-events:none;
+}
+
+.login-wrap{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:400px;
+  padding:20px;
+}
+
+.logo-row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:12px;
+}
+.logo-img{
+  max-width:220px;
+  width:100%;
+  height:auto;
+  display:block;
+}
+body:not(.light) .logo-img{
+  filter:invert(1) hue-rotate(180deg);
+}
+.logo-caption{
+  text-align:center;
+  font-size:11px;
+  color:#888;
+  font-family:'JetBrains Mono',monospace;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:32px;
+}
+body.light .logo-caption{ color:#666; }
+.logo-badge{
+  font-size:12px;
+  font-weight:800;
+  color:#fff;
+  background:#6866f2;
+  padding:6px 12px;
+  border-radius:8px;
+  letter-spacing:.03em;
+}
+.logo-brand{
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:-.3px;
+  color:#f5f5f5;
+}
+.logo-sub{
+  font-size:9px;
+  color:#888;
+  font-family:'JetBrains Mono',monospace;
+  letter-spacing:.06em;
+}
+
+.card{
+  background:#161616;
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:20px;
+  padding:32px;
+}
+.card-title{
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:-.4px;
+  margin-bottom:4px;
+}
+.card-sub{
+  font-size:12px;
+  color:#888;
+  margin-bottom:28px;
+}
+
+.field{margin-bottom:16px;}
+.field label{
+  display:block;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#888;
+  margin-bottom:6px;
+}
+.field input{
+  width:100%;
+  background:#1e1e1e;
+  border:1.5px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  color:#f5f5f5;
+  font-family:'Manrope',sans-serif;
+  font-size:14px;
+  font-weight:500;
+  padding:11px 14px;
+  outline:none;
+  transition:border-color .15s, box-shadow .15s;
+}
+.field input:focus{
+  border-color:#6866f2;
+  box-shadow:0 0 0 3px rgba(104,102,242,0.15);
+}
+.field input::placeholder{color:#555;}
+
+.btn{
+  width:100%;
+  padding:13px;
+  background:#6866f2;
+  color:#fff;
+  border:none;
+  border-radius:12px;
+  font-family:'Manrope',sans-serif;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .15s;
+  margin-top:8px;
+  letter-spacing:.02em;
+}
+.btn:hover{background:#5250c2;transform:translateY(-1px);}
+.btn:active{transform:translateY(0);}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+.error-bar{
+  background:rgba(239,68,68,0.1);
+  border:1px solid rgba(239,68,68,0.25);
+  border-radius:10px;
+  padding:10px 14px;
+  font-size:12px;
+  color:#ef4444;
+  margin-bottom:16px;
+  display:none;
+}
+.error-bar.show{display:block;}
+
+.footer-note{
+  text-align:center;
+  font-size:10px;
+  color:#555;
+  margin-top:20px;
+  font-family:'JetBrains Mono',monospace;
+  letter-spacing:.04em;
+}
+
+body.light { background:#f8f8f8; color:#0f0f0f; }
+body.light::before { background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(85,83,214,0.08) 0%, transparent 70%); }
+body.light .logo-brand { color:#0f0f0f; }
+body.light .logo-sub { color:#666; }
+body.light .card { background:#fff; border-color:rgba(0,0,0,0.08); box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+body.light .card-title { color:#0f0f0f; }
+body.light .card-sub { color:#666; }
+body.light .field label { color:#666; }
+body.light .field input { background:#f2f2f2; border-color:rgba(0,0,0,0.12); color:#0f0f0f; }
+body.light .field input::placeholder { color:#999; }
+body.light .field input:focus { border-color:#6866f2; box-shadow:0 0 0 3px rgba(104,102,242,0.15); background:#fff; }
+body.light .footer-note { color:#999; }
+body.light .theme-btn-fixed { border-color: rgba(0,0,0,0.12); color:#666; }
+body.light .theme-btn-fixed:hover { border-color:#6866f2; color:#6866f2; }
+
+.theme-btn-fixed {
+  position: fixed; top: 16px; right: 16px;
+  background: transparent; border: 1px solid rgba(255,255,255,0.12);
+  color: #888; border-radius: 8px; padding: 6px 12px;
+  font-family: 'Manrope', sans-serif; font-size: 12px;
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  transition: all .15s;
+}
+body.light .theme-btn-fixed { border-color: rgba(0,0,0,0.1); }
+.theme-btn-fixed:hover { border-color: #6866f2; color: #6866f2; }
+</style>
+</head>
+<body>
+<script src="/theme.js"></script>
+<button class="theme-btn-fixed" onclick="toggleThemeGlobal()">
+  <span id="theme_icon">☀</span><span id="theme_lbl">Светлая</span>
+</button>
+
+<div class="login-wrap">
+  <div class="logo-row">
+    <img src="/edagency-logo.png" alt="EdAgency" class="logo-img">
+  </div>
+  <div class="logo-caption">Юнит-Экономика · Калькулятор</div>
+
+  <div class="card">
+    <div class="card-title">Вход в систему</div>
+    <div class="card-sub">Введите логин и пароль для доступа</div>
+
+    <div class="error-bar" id="error_bar"></div>
+
+    <form id="login_form" onsubmit="handleLogin(event)">
+      <div class="field">
+        <label>Логин</label>
+        <input type="text" id="username" name="username" placeholder="username" autocomplete="username" autofocus>
+      </div>
+      <div class="field">
+        <label>Пароль</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn" type="submit" id="submit_btn">Войти</button>
+    </form>
+  </div>
+
+  <div class="footer-note">calc-service · EdAgency</div>
+</div>
+
+<script>
+function showError(msg) {
+  const el = document.getElementById('error_bar');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function hideError() {
+  document.getElementById('error_bar').classList.remove('show');
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  hideError();
+
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (!username || !password) {
+    showError('Введите логин и пароль');
+    return;
+  }
+
+  const btn = document.getElementById('submit_btn');
+  btn.disabled = true;
+  btn.textContent = 'Вход…';
+
+  try {
+    const resp = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      showError(data.error || 'Ошибка входа');
+      return;
+    }
+
+    // Save token in localStorage and cookie
+    localStorage.setItem('calc_token', data.token);
+    localStorage.setItem('calc_user', JSON.stringify(data.user));
+    document.cookie = `token=${data.token}; path=/; max-age=${7 * 24 * 3600}`;
+
+    // Redirect
+    window.location.href = '/';
+  } catch (err) {
+    showError('Ошибка соединения с сервером');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Войти';
+  }
+}
+
+// If already logged in, redirect
+(function() {
+  const token = localStorage.getItem('calc_token');
+  if (token) window.location.href = '/';
+})();
+</script>
+</body>
+</html>
