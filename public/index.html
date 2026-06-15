@@ -1585,32 +1585,6 @@ body.support-only #mrr_card { order: -1; margin-top: 0 !important; }
       </div>
     </div>
 
-    <!-- Ручная итоговая сумма -->
-    <div id="manual_total_section" class="dev-only-block" style="margin-top:8px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r)">
-      <div id="calc_total_row" style="display:none;font-size:11px;color:var(--t2);align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
-        <span>Расчётная: <span id="calc_total_val" style="font-family:var(--mono);color:var(--t1);font-weight:600">—</span></span>
-        <span id="manual_diff_badge" style="display:none;font-size:11px;font-family:var(--mono);font-weight:700;padding:2px 7px;border-radius:4px"></span>
-      </div>
-      <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">
-        <div style="flex:1;min-width:180px">
-          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t2);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">
-            Итоговая сумма для клиента
-            <span id="manual_badge" style="display:none;font-size:9px;padding:2px 6px;background:var(--warning-lo);color:var(--warning);border-radius:4px;border:1px solid var(--warning-md);font-weight:700">✎ вручную</span>
-          </label>
-          <div class="inp-wrap">
-            <input type="number" id="manual_total" min="0" step="1000"
-                   placeholder="Оставьте пустым — из расчёта"
-                   oninput="onManualTotalInput()" style="max-width:240px">
-            <span class="unit">₽</span>
-          </div>
-          <div style="font-size:10px;color:var(--t3);margin-top:3px">Если задана — именно эта сумма идёт в КП и пересчитывает распределение</div>
-        </div>
-        <div id="manual_reset_row" style="display:none;padding-bottom:2px">
-          <button onclick="resetManualTotal()" style="font-size:11px;background:none;border:1px solid var(--border2);border-radius:6px;color:var(--t2);padding:5px 10px;cursor:pointer;white-space:nowrap">← сбросить к расчётной</button>
-        </div>
-      </div>
-    </div>
-
     <div id="wblk" class="warns dev-only-block" style="margin-top:12px"></div>
 
     <!-- Распределение -->
@@ -1894,6 +1868,40 @@ body.support-only #mrr_card { order: -1; margin-top: 0 !important; }
       </div>
     </div>
 
+    <!-- Ручная итоговая сумма -->
+    <div id="manual_total_section" class="dev-only-block" style="margin-top:12px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r)">
+      <!-- Заголовок + бейдж -->
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <span style="font-size:11px;color:var(--t2);font-weight:600;text-transform:uppercase;letter-spacing:.06em">Итоговая сумма для клиента</span>
+        <span id="manual_badge" style="display:none;font-size:9px;padding:2px 6px;background:var(--warning-lo);color:var(--warning);border-radius:4px;border:1px solid var(--warning-md);font-weight:700">✎ изменено вручную</span>
+      </div>
+      <!-- Расчётная + diff -->
+      <div id="calc_total_row" style="display:none;font-size:11px;color:var(--t2);align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <span>Расчётная: <span id="calc_total_val" style="font-family:var(--mono);color:var(--t1);font-weight:600">—</span></span>
+        <span id="manual_diff_badge" style="display:none;font-size:11px;font-family:var(--mono);font-weight:700;padding:2px 7px;border-radius:4px"></span>
+      </div>
+      <!-- Кем изменено — показывается только когда задана ручная сумма -->
+      <div id="manual_edited_by_row" style="display:none;margin-bottom:8px">
+        <div style="font-size:10px;color:var(--t3);margin-bottom:3px">Кем изменено</div>
+        <input type="text" id="manual_edited_by" placeholder="Ответственный не указан"
+               oninput="onManualEditedByInput()"
+               style="font-size:11px;color:var(--t1);background:var(--input-bg);border:1px solid var(--border2);border-radius:5px;padding:4px 8px;width:200px;max-width:100%;outline:none;font-family:var(--sans)">
+      </div>
+      <!-- Поле суммы + кнопка сброса -->
+      <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">
+        <div class="inp-wrap" style="width:100%;max-width:240px">
+          <input type="number" id="manual_total" min="0" step="1000"
+                 placeholder="Оставьте пустым — из расчёта"
+                 oninput="onManualTotalInput()">
+          <span class="unit">₽</span>
+        </div>
+        <div id="manual_reset_row" style="display:none;padding-bottom:2px">
+          <button onclick="resetManualTotal()" style="font-size:11px;background:none;border:1px solid var(--border2);border-radius:6px;color:var(--t2);padding:5px 10px;cursor:pointer;white-space:nowrap">← сбросить к расчётной</button>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--t3);margin-top:4px">Если задана — именно эта сумма идёт в КП и пересчитывает распределение</div>
+    </div>
+
   </div>
 </div>
 
@@ -2095,6 +2103,8 @@ const fP=n=>isNaN(n)||n==null?'—':(n*100).toFixed(1)+'%';
 let mode='cost',alloc='hours',ch=null,admOpen=true;
 let calcType='hours', supportOn=true, discMode='full', projUnit='months';
 let manualTotal=0; // 0 = не задано; >0 = задано менеджером вручную
+let manualTotalEditedBy='';          // кем зафиксирована ручная цена (внутреннее поле)
+let manualTotalEditedByTouched=false;// true = пользователь редактировал editedBy вручную → не перезаписывать автоматически
 
 // ── Исполнители ──────────────────────────────────────────────────────────
 let execIdSeq=0;
@@ -2815,6 +2825,9 @@ async function generateKP(){
       data.validity=validity;
       if(!data.telegram&&telegram)data.telegram=telegram;
       data.manager=getKPManager();
+      // Apply discount from calculator — same logic as generateKPFromText
+      const prices=getCalcPrices();
+      if(prices.discount>0&&prices.originalProject>0){data.originalTotal=prices.originalProject;data.discount=prices.discount;}
       renderKPPage(data);
     }catch(e){
       showKPError('Ошибка: '+e.message);
@@ -4173,15 +4186,33 @@ function togAdm(){
 }
 
 // ── Ручная итоговая сумма ────────────────────────────────────────────────
+// Возвращает имя ответственного из шапки проекта
+function getResponsibleName(){return ($('proj_resp')?.value||'').trim();}
+
+// Пользователь редактирует поле "Кем изменено" вручную
+function onManualEditedByInput(){
+  manualTotalEditedBy=($('manual_edited_by')?.value||'');
+  manualTotalEditedByTouched=true;
+  saveState();
+}
+
 function onManualTotalInput(){
+  const prev=manualTotal;
   const val=parseFloat($('manual_total')?.value)||0;
   manualTotal=val>0?Math.round(val):0;
+  // При первом вводе суммы — автозаполнить "Кем изменено" из поля Ответственный
+  if(manualTotal>0&&prev===0&&!manualTotalEditedByTouched){
+    manualTotalEditedBy=getResponsibleName();
+    const ebl=$('manual_edited_by');if(ebl)ebl.value=manualTotalEditedBy;
+  }
   calc();
 }
 function resetManualTotal(){
   manualTotal=0;
-  const el=$('manual_total');
-  if(el)el.value='';
+  const el=$('manual_total');if(el)el.value='';
+  manualTotalEditedBy='';
+  manualTotalEditedByTouched=false;
+  const ebl=$('manual_edited_by');if(ebl)ebl.value='';
   calc();
 }
 
@@ -4432,14 +4463,20 @@ function calc(){
   // UI ручной суммы
   if($('calc_total_val'))$('calc_total_val').textContent=fmt(AutoPrice);
   {
-    const cr=$('calc_total_row'),mb=$('manual_badge'),mr=$('manual_reset_row'),db=$('manual_diff_badge');
+    const cr=$('calc_total_row'),mb=$('manual_badge'),mr=$('manual_reset_row'),db=$('manual_diff_badge'),ebr=$('manual_edited_by_row');
     if(cr)cr.style.display=hasManual?'flex':'none';
     if(mb)mb.style.display=hasManual?'':'none';
     if(mr)mr.style.display=hasManual?'':'none';
+    if(ebr)ebr.style.display=hasManual?'':'none';
+    // Авто-синхронизация "Кем изменено" с Ответственным (пока не редактировалось вручную)
+    if(hasManual&&!manualTotalEditedByTouched){
+      const rn=getResponsibleName();
+      if(rn!==manualTotalEditedBy){manualTotalEditedBy=rn;const ebl=$('manual_edited_by');if(ebl)ebl.value=rn;}
+    }
     if(db){
       if(hasManual){
         db.style.display='';
-        db.textContent=(priceAdj>=0?'+':'')+fmt(priceAdj)+' ₽ к расч.';
+        db.textContent=(priceAdj>=0?'+':'')+fmt(priceAdj)+' к расч.';
         db.style.color=priceAdj>=0?'var(--success)':'var(--warning)';
         db.style.background=priceAdj>=0?'var(--success-lo)':'var(--warning-lo)';
       }else{db.style.display='none';}
@@ -4547,7 +4584,7 @@ const LS_INPUTS=['h_sup','k_c','k_r','r_mkt','mrr_c','prepay','dev_fix','sup_fix
 
 function saveState(){
   try{
-    const data={mode,alloc,calcType,supportOn,discMode,manualTotal,
+    const data={mode,alloc,calcType,supportOn,discMode,manualTotal,manualTotalEditedBy,manualTotalEditedByTouched,
       executors:JSON.parse(JSON.stringify(executors)),
       adminItems:JSON.parse(JSON.stringify(adminItems)),
       apiProjItems:JSON.parse(JSON.stringify(apiProjItems)),
@@ -4574,6 +4611,8 @@ function loadState(){
     if(data.supportOn!=null&&data.supportOn!==supportOn)setSupport(data.supportOn);
     if(data.discMode&&data.discMode!==discMode)setDiscMode(data.discMode);
     if(data.manualTotal!=null&&data.manualTotal>0){manualTotal=data.manualTotal;const mel=$('manual_total');if(mel)mel.value=data.manualTotal;}
+    if(data.manualTotalEditedBy!=null){manualTotalEditedBy=data.manualTotalEditedBy;const ebl=$('manual_edited_by');if(ebl)ebl.value=manualTotalEditedBy;}
+    if(data.manualTotalEditedByTouched!=null)manualTotalEditedByTouched=data.manualTotalEditedByTouched;
     DIST.forEach(d=>{if(data['p_'+d.k]!=null){const el=$('p_'+d.k);if(el)el.value=data['p_'+d.k];}});
     const kcel=$('kc');if(kcel)kcel.textContent=parseFloat($('k_c')?.value||1).toFixed(1);
     const krel=$('kr');if(krel)krel.textContent=parseFloat($('k_r').value).toFixed(2);
@@ -4909,7 +4948,7 @@ function closeSaveModal() {
 }
 
 function gatherCalcParams() {
-  const data = { mode, alloc, calcType, supportOn, discMode, manualTotal,
+  const data = { mode, alloc, calcType, supportOn, discMode, manualTotal, manualTotalEditedBy, manualTotalEditedByTouched,
     executors: JSON.parse(JSON.stringify(executors)),
     adminItems: JSON.parse(JSON.stringify(adminItems)),
     apiProjItems: JSON.parse(JSON.stringify(apiProjItems)),

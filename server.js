@@ -18,7 +18,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/settings', (req, res) => {
   const { getSettings } = require('./db');
   const s = getSettings();
-  const { anthropic_api_key, kp_prompt, ...publicSettings } = s;
+  // eslint-disable-next-line no-unused-vars
+  const { anthropic_api_key, openai_api_key, kp_prompt, ...publicSettings } = s;
   res.json(publicSettings);
 });
 
@@ -134,6 +135,10 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+app.get('/admin/kp/:id/edit', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 

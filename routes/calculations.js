@@ -7,6 +7,8 @@ const {
   getCalculationById,
   updateCalculationMeta,
   updateCalculationKPData,
+  deleteCalculation,
+  deleteClarificationsBySlug,
 } = require('../db');
 
 const router = express.Router();
@@ -76,6 +78,20 @@ router.patch('/:id', (req, res) => {
   const calc = getCalculationById(id);
   if (!calc) return res.status(404).json({ error: 'Не найдено' });
   updateCalculationMeta(id, title, client || '');
+  res.json({ ok: true });
+});
+
+// DELETE /api/calculations/:id — admin only
+router.delete('/:id', (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Требуются права администратора' });
+  }
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) return res.status(400).json({ error: 'Неверный id' });
+  const calc = getCalculationById(id);
+  if (!calc) return res.status(404).json({ error: 'КП не найдено' });
+  deleteClarificationsBySlug(calc.slug);
+  deleteCalculation(id);
   res.json({ ok: true });
 });
 

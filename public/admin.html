@@ -579,31 +579,64 @@ function renderKPList(calcs) {
   tbody.innerHTML = calcs.map(c => {
     const price = c.price > 0 ? c.price.toLocaleString('ru-RU') + '\u202f₽' : '—';
     const date = c.created_at ? new Date(c.created_at).toLocaleDateString('ru-RU') : '—';
-    const link = '/kp/' + c.slug;
+    const slug = c.slug || '';
     const hasKP = !!c.has_kp;
     return `<tr>
-      <td>
-        ${hasKP ? `<a href="${link}" target="_blank" style="color:var(--purple);text-decoration:none;font-weight:600">${escHtml(c.title || '—')}</a>`
-                : `<span style="color:var(--t1);font-weight:600">${escHtml(c.title || '—')}</span>`}
-      </td>
+      <td style="font-weight:600;color:var(--t1)">${escHtml(c.title || '—')}</td>
       <td style="color:var(--t2)">${escHtml(c.client || '—')}</td>
       <td style="color:var(--t2)">${escHtml(c.responsible_name || '—')}</td>
       <td style="font-family:var(--mono);font-size:11px">${price}</td>
       <td style="font-family:var(--mono);font-size:11px;color:var(--t3)">${date}</td>
-      <td style="text-align:right">
-        ${hasKP ? `<a href="${link}" target="_blank" class="btn-outline btn-sm" style="text-decoration:none;margin-right:4px">Открыть КП</a>` : '<span style="font-size:11px;color:var(--t3);margin-right:8px">нет КП</span>'}
-        <button class="btn-outline btn-sm" style="color:var(--error);border-color:var(--error)" onclick="deleteKP(${c.id})">Удалить</button>
+      <td>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end">
+          ${hasKP ? `<a href="/kp/${slug}" target="_blank" class="btn-outline btn-sm" style="text-decoration:none" onclick="event.stopPropagation()">Открыть КП</a>` : ''}
+          <a href="/admin/kp/${c.id}/edit" class="btn-outline btn-sm" style="text-decoration:none" onclick="event.stopPropagation()">Редактировать</a>
+          ${hasKP ? `<a href="/kp/${slug}/pdf" target="_blank" class="btn-outline btn-sm" style="text-decoration:none" onclick="event.stopPropagation()">PDF</a>` : ''}
+          ${hasKP ? `<button class="btn-outline btn-sm" data-slug="${escHtml(slug)}" onclick="event.stopPropagation();copyKPLink(this)">Копировать ссылку</button>` : ''}
+          <button class="btn-outline btn-sm" style="color:var(--error);border-color:var(--error)" data-id="${c.id}" data-title="${escHtml(c.title || '')}" onclick="event.stopPropagation();deleteKP(this)">Удалить</button>
+        </div>
       </td>
     </tr>`;
   }).join('');
   if (table) table.style.display = 'table';
 }
 
-async function deleteKP(id) {
-  if (!confirm('Удалить КП?')) return;
-  await fetch('/api/admin/kp/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
-  const calcs = await apiGet('/api/admin/kp-list');
-  if (calcs) renderKPList(calcs);
+async function copyKPLink(btn) {
+  const slug = btn.dataset.slug;
+  const url = location.origin + '/kp/' + slug;
+  try {
+    await navigator.clipboard.writeText(url);
+    const prev = btn.textContent;
+    btn.textContent = 'Скопировано ✓';
+    setTimeout(() => { btn.textContent = prev; }, 1600);
+  } catch (e) {
+    showToast('Ссылка: ' + url);
+  }
+}
+
+async function deleteKP(btn) {
+  const id = btn.dataset.id;
+  const title = btn.dataset.title;
+  const msg = title ? `Удалить КП «${title}»?\n\nДействие необратимо.` : 'Удалить КП?\n\nДействие необратимо.';
+  if (!confirm(msg)) return;
+  btn.disabled = true;
+  try {
+    const resp = await fetch('/api/calculations/' + id, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer ' + token },
+    });
+    if (!resp.ok) {
+      const data = await resp.json().catch(() => ({}));
+      alert('Ошибка удаления: ' + (data.error || resp.status));
+      return;
+    }
+    const calcs = await apiGet('/api/admin/kp-list');
+    if (calcs) renderKPList(calcs);
+  } catch (e) {
+    alert('Ошибка соединения при удалении');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 function renderClarifications(items) {

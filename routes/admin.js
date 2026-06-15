@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { requireAdmin } = require('../middleware/auth');
-const { getSettings, upsertSetting, getAllUsers, updateUserPassword, updateUserDisplayName, getUserById, getCalculations, deleteCalculation, getAllClarifications, getClarificationsBySlug } = require('../db');
+const { getSettings, upsertSetting, getAllUsers, updateUserPassword, updateUserDisplayName, getUserById, getCalculations, getCalculationById, deleteCalculation, deleteClarificationsBySlug, getAllClarifications, getClarificationsBySlug } = require('../db');
 
 const router = express.Router();
 
@@ -82,6 +82,10 @@ router.get('/kp-list', (req, res) => {
 // DELETE /api/admin/kp/:id
 router.delete('/kp/:id', (req, res) => {
   const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) return res.status(400).json({ error: 'Неверный id' });
+  const calc = getCalculationById(id);
+  if (!calc) return res.status(404).json({ error: 'КП не найдено' });
+  deleteClarificationsBySlug(calc.slug);
   deleteCalculation(id);
   res.json({ ok: true });
 });

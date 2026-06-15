@@ -175,6 +175,10 @@ function createClarification(slug, name, message) {
   return db.prepare('INSERT INTO clarifications (slug, name, message) VALUES (?, ?, ?)').run(slug, name || '', message).lastInsertRowid;
 }
 
+function deleteClarificationsBySlug(slug) {
+  return db.prepare('DELETE FROM clarifications WHERE slug = ?').run(slug);
+}
+
 function getClarificationsBySlug(slug) {
   return db.prepare('SELECT * FROM clarifications WHERE slug = ? ORDER BY created_at DESC').all(slug);
 }
@@ -200,6 +204,7 @@ module.exports = {
   updateCalculationMeta,
   updateCalculationKPData,
   createClarification,
+  deleteClarificationsBySlug,
   getClarificationsBySlug,
   getAllClarifications,
 };
